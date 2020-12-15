@@ -1,10 +1,10 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-const Home = () => import('views/Home')
-const Category = () => import('views/Category')
-const Cart = () => import('views/Cart')
-const Profile = () => import('views/Profile')
+const Home = () => import('@/views/home/Home')
+const Category = () => import('@/views/category/Category')
+const Cart = () => import('@/views/cart/Cart')
+const Profile = () => import('@/views/profile/Profile')
 Vue.use(VueRouter)
 const routes = [
   {
@@ -33,8 +33,8 @@ const router = new VueRouter({
   routes,
   mode: 'history'
 })
-// const originalReplace = VueRouter.prototype.replace;
-// VueRouter.prototype.replace = function replace(location) {
-//   return originalReplace.call(this, location).catch(err => err);
-// };
+const originalReplace = VueRouter.prototype.replace;
+VueRouter.prototype.replace = function replace(location) {
+  return originalReplace.call(this, location).catch(err => err);
+};
 export default router
