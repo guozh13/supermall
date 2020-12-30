@@ -1,6 +1,6 @@
 <template>
   <div class="goods">
-    <goods-list-item v-for="item in goodsItemList" :goods-item="item"></goods-list-item>
+    <goods-list-item v-for="item in goodsItemList" :goods-item="item" @click.native="itemClick(item.iid)"></goods-list-item>
   </div>
 </template>
 
@@ -18,6 +18,12 @@ export default {
   },
   components:{
     GoodsListItem
+  },
+  methods:{
+    itemClick(iid){
+      console.log(iid);
+      this.$router.push('/detail/' + iid)
+    }
   }
 }
 </script>

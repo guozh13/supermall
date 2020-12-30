@@ -3,23 +3,20 @@
     <nav-bar class="home-nav">
       <div slot="center">购物街</div>
     </nav-bar>
+    <tab-control class="tab-control" @tabClick="tabClick" ref="topTabControl" v-show="isShowTopTabClick"></tab-control>
     <scroll class="content"
-            :probe-type="3"
-            :pull-up-load="true"
             ref="scroll"
-            @scroll="scroll"
-            @pullingUp="pullingUp">
-      <home-swiper :banners="banners"></home-swiper>
+            :probe-type="3"
+            @scroll="contentScroll"
+            :pull-up-load="true"
+            @pullingUp="loadMore">
+      <home-swiper :banners="banners" @finishLoad="finishLoadOneHomeSwiper"></home-swiper>
       <recommend-view :recommends="recommends"></recommend-view>
       <feature-view></feature-view>
-      <tab-control class="tab-control" @tabClick="tabClick"></tab-control>
-      <goods-list :goods-item-list="goods[currentType].list"></goods-list>
-      <ul>
-        <li>list1</li>
-        <li>list2</li>
-        <li>list3</li>
-      </ul>
+      <tab-control class="tab-control" @tabClick="tabClick" ref="tabControl"></tab-control>
+      <goods-list :goods-item-list="showGoods"></goods-list>
     </scroll>
+    <back-top @click.native="backTop" v-show="isShowBackTop"></back-top>
   </div>
 </template>
 
@@ -31,8 +28,10 @@ import HomeSwiper from "./childComps/HomeSwiper";
 import RecommendView from "./childComps/RecommendView";
 import FeatureView from "@/views/home/childComps/FeatureView";
 import GoodsList from "@/components/content/goods/GoodsList";
+import BackTop from "@/components/content/goods/BackTop";
 
-import {getHomeMultidata, getHomeProductData} from "@/network/home";
+import {getHomeMultiData, getHomeProductData} from "@/network/home";
+import {debounce} from "@/common/utils";
 
 export default {
   name: "Home",
@@ -43,7 +42,8 @@ export default {
     HomeSwiper,
     RecommendView,
     FeatureView,
-    GoodsList
+    GoodsList,
+    BackTop
   },
   data() {
     return {
@@ -54,11 +54,25 @@ export default {
         'new': {page: 0, list: []},
         'sell': {page: 0, list: []}
       },
-      currentType: 'pop'
+      currentType: 'pop',
+      isShowBackTop: false,
+      isShowTopTabClick: false,
+      topTabControlOffsetTop: 0,
+      currentScrollY: {
+        'pop': 0,
+        'new': 0,
+        'sell': 0
+      }
+    }
+  },
+  computed: {
+    showGoods() {
+      return this.goods[this.currentType].list
     }
   },
   methods: {
     tabClick(index) {
+      this.currentScrollY[this.currentType] = this.$refs.scroll.scroll.y
       if (index === 0) {
         this.currentType = 'pop'
       } else if (index === 1) {
@@ -66,34 +80,67 @@ export default {
       } else {
         this.currentType = 'sell'
       }
+      this.$refs.topTabControl.currentIndex = index
+      this.$refs.tabControl.currentIndex = index
+      setTimeout(() => {
+        this.$refs.scroll.refresh()
+        this.$refs.scroll.scrollTo(0, this.currentScrollY[this.currentType], 0)
+      })
+
+
     },
-    scroll(position) {
-      console.log(position);
+    contentScroll(position) {
+      this.isShowBackTop = -position.y > 1000
+      this.isShowTopTabClick = -position.y > this.topTabControlOffsetTop
+
     },
-    pullingUp() {
-      console.log('hhh');
+    loadMore() {
+      this.getHomeGoods(this.currentType)
     },
     getHomeGoods(type) {
-      this.goods[type].page += 1
-      getHomeProductData(type, this.goods[type].page).then(
-        res => {
-          this.goods[type].list = res.data.list
+      const page = this.goods[type].page + 1
+      getHomeProductData(type, page).then(res => {
+          this.goods[type].list.push(...res.data.list)
+          this.goods[type].page += 1
+          this.$refs.scroll.finishPullUp()
+          this.$refs.scroll.refresh()
         }
       )
+    },
+    backTop() {
+      this.$refs.scroll.scrollTo(0, 0)
+    },
+    getHomeMultiData() {
+      getHomeMultiData().then(res => {
+        this.banners = res.data.banner.list;
+        this.recommends = res.data.recommend.list
+      })
+    },
+    finishLoadOneHomeSwiper() {
+      this.topTabControlOffsetTop = this.$refs.tabControl.$el.offsetTop
+      this.currentScrollY["pop"] = -this.$refs.tabControl.$el.offsetTop
+      this.currentScrollY["new"] = -this.$refs.tabControl.$el.offsetTop
+      this.currentScrollY["sell"] = -this.$refs.tabControl.$el.offsetTop
+
     }
   },
   created() {
-    getHomeMultidata().then(res => {
-      this.banners = res.data.banner.list;
-      this.recommends = res.data.recommend.list
-    })
+    this.getHomeMultiData()
     this.getHomeGoods('pop')
     this.getHomeGoods('new')
     this.getHomeGoods('sell')
+
     // getHomeProductData('pop',1).then(res=>{
     //   this.goodsItemList=res.data.list
     //   console.log(res);
     // })
+  },
+  mounted() {
+    const refresh = debounce(this.$refs.scroll.refresh, 0)
+    this.$bus.$on('finishLoadGoods', () => {
+      refresh()
+    })
+
   }
 }
 </script>

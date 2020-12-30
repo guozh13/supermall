@@ -1,6 +1,6 @@
 <template>
   <div class="goods-item">
-    <img :src="goodsItem.show.img" alt="">
+    <img :src="showImage" :key="showImage" @load="imgLoad" alt="">
     <div class="goods-info">
       <p>{{ goodsItem.title }}</p>
       <span class="price">{{ goodsItem.price }}</span>
@@ -10,6 +10,9 @@
 </template>
 
 <script>
+
+import {debounce} from "@/common/utils";
+
 export default {
   name: "GoodsListItem",
   props: {
@@ -18,6 +21,21 @@ export default {
       default() {
         return {}
       }
+    }
+  },
+  computed: {
+    showImage() {
+      return this.goodsItem.show.img || this.goodsItem.img || this.goodsItem.image
+    }
+  },
+  mounted() {
+    // console.log(this.goodsItem);
+  },
+  methods: {
+    imgLoad() {
+      // const emit =debounce( console.log('finishLoadGoods'),1000)
+      // emit()
+      this.$bus.$emit('finishLoadGoods')
     }
   }
 }

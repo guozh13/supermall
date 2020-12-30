@@ -46,6 +46,7 @@ export default {
         }
       )
     }
+    // console.log(this.scroll);
   },
   methods: {
     scrollTo(x, y, time = 300) {
@@ -53,6 +54,9 @@ export default {
     },
     finishPullUp() {
       this.scroll.finishPullUp()
+    },
+    refresh() {
+      this.scroll.refresh()
     }
   }
 }

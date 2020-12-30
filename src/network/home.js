@@ -1,6 +1,6 @@
 import {request} from "@/network/request";
 
-export function getHomeMultidata() {
+export function getHomeMultiData() {
   return request({
     url: '/home/multidata'
   })
