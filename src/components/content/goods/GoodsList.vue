@@ -1,14 +1,16 @@
 <template>
   <div class="goods">
-    <goods-list-item v-for="item in goodsItemList" :goods-item="item" @click.native="itemClick(item.iid)"></goods-list-item>
+    <goods-list-item v-for="item in goodsItemList" :goods-item="item"
+                     @click.native="itemClick(item.iid)"></goods-list-item>
   </div>
 </template>
 
 <script>
 import GoodsListItem from "@/components/content/goods/GoodsLIstItem";
+
 export default {
   name: "Goods",
-  props:{
+  props: {
     goodsItemList: {
       type: Array,
       default() {
@@ -16,12 +18,11 @@ export default {
       }
     }
   },
-  components:{
+  components: {
     GoodsListItem
   },
-  methods:{
-    itemClick(iid){
-      console.log(iid);
+  methods: {
+    itemClick(iid) {
       this.$router.push('/detail/' + iid)
     }
   }

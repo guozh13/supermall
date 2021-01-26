@@ -28,9 +28,6 @@ export default {
         return {}
       }
     }
-  },
-  created() {
-    console.log(this.paramInfo);
   }
 }
 </script>

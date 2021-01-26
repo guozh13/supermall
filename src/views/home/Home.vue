@@ -31,7 +31,7 @@ import GoodsList from "@/components/content/goods/GoodsList";
 import BackTop from "@/components/content/goods/BackTop";
 
 import {getHomeMultiData, getHomeProductData} from "@/network/home";
-import {debounce} from "@/common/utils";
+import {itemListenMixin} from "@/common/mixin";
 
 export default {
   name: "Home",
@@ -45,6 +45,7 @@ export default {
     GoodsList,
     BackTop
   },
+  mixins: [itemListenMixin],
   data() {
     return {
       banners: [],
@@ -72,7 +73,7 @@ export default {
   },
   methods: {
     tabClick(index) {
-      this.currentScrollY[this.currentType] = this.$refs.scroll.scroll.y
+      // this.currentScrollY[this.currentType] = this.$refs.scroll.scroll.y
       if (index === 0) {
         this.currentType = 'pop'
       } else if (index === 1) {
@@ -85,6 +86,7 @@ export default {
       setTimeout(() => {
         this.$refs.scroll.refresh()
         this.$refs.scroll.scrollTo(0, this.currentScrollY[this.currentType], 0)
+
       })
 
 
@@ -92,7 +94,6 @@ export default {
     contentScroll(position) {
       this.isShowBackTop = -position.y > 1000
       this.isShowTopTabClick = -position.y > this.topTabControlOffsetTop
-
     },
     loadMore() {
       this.getHomeGoods(this.currentType)
@@ -136,11 +137,10 @@ export default {
     // })
   },
   mounted() {
-    const refresh = debounce(this.$refs.scroll.refresh, 0)
-    this.$bus.$on('finishLoadGoods', () => {
-      refresh()
-    })
 
+  },
+  deactivated() {
+    this.$bus.$off('finishLoadGoods', this.debounceRefreshScroll)
   }
 }
 </script>

@@ -33,7 +33,6 @@ export default {
   },
   methods: {
     finishLoad() {
-      // console.log('finishLoad');
       this.finishLoadImgNumber += 1
       if (this.finishLoadImgNumber === 1) {
         this.$emit('finishLoad')
